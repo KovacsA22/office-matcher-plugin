@@ -56,10 +56,20 @@ async function load(targetId){
   }
 }
 
-function getRangeById(context, id){
-  const element = document.getElementById(id).value;
-  return context.workbook.worksheets.getActiveWorksheet().getRange(element);
+
+function getRange(context, address){
+  const parts = address.split("!");
+  const worksheet = parts[0];
+  const cells = parts[1];
+  return context.workbook.worksheets.getItem(worksheet).getRange(cells);
 }
+
+function getRangeById(context, id){
+  const value = document.getElementById(id).value;
+  return getRange(context, value);
+}
+
+
 
 async function processInputs(context){
   // WORDS
@@ -67,10 +77,11 @@ async function processInputs(context){
     let wordRange = getRangeById(context,"words-start");
         
     // Read the range address
-    wordRange.load("columnIndex");
+    wordRange.load("rowIndex");
     await context.sync();
     
-    const top = context.workbook.worksheets.getActiveWorksheet().getCell(0,wordRange.columnIndex);
+    const top = wordRange.getOffsetRange(-wordRange.rowIndex,0);
+    //const top = context.workbook.worksheets.getActiveWorksheet().getCell(0,wordRange.columnIndex);
 
     top.load("values");
     await context.sync();
@@ -93,10 +104,10 @@ async function processInputs(context){
     let textRange = getRangeById(context, "texts-start");
 
     // Read the range address
-    textRange.load("columnIndex");
+    textRange.load("rowIndex");
     await context.sync();
-
-    const top = context.workbook.worksheets.getActiveWorksheet().getCell(0,textRange.columnIndex);
+    const top = textRange.getOffsetRange(-textRange.rowIndex,0);
+    //const top = context.workbook.worksheets.getActiveWorksheet().getCell(0,textRange.columnIndex);
 
     top.load("values");
     await context.sync();
@@ -139,7 +150,7 @@ async function run() {
     await Excel.run(async (context) => {
       document.getElementById("run-text").innerText="Futtatás...";
       await processInputs(context);
-      const rootCell = context.workbook.worksheets.getActiveWorksheet().getRange(resultAddress);
+      const rootCell = getRange(context, resultAddress);
       let activeCell = rootCell;
 
       await runSingleCounter(activeCell);
@@ -157,12 +168,13 @@ async function run() {
     });
   } catch (error) {
     console.error(error);
+    document.getElementById("run-text").innerText="Futtatás\n(hiba:"+error+")";
+
   }
 }
 
 
 async function runSingleCounter(resultRange) {
-  try {
       const occurences = [];
       for(const word of wordArray){
         let occurence = 0;
@@ -186,15 +198,10 @@ async function runSingleCounter(resultRange) {
       }
       //await context.sync();
 
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 
 async function runPairsCounter(resultRange) {
-  try {
-
       const occurences = {};
         for(i=0;i<wordArray.length-1;i++){
           for(j=i+1;j<wordArray.length;j++){
@@ -219,10 +226,7 @@ async function runPairsCounter(resultRange) {
         const keys = key.split("x");
         resultRange.values.push([parseInt(keys[0])+1,parseInt(keys[1])+1,occurences[key]]);
       }
-      
-  } catch (error) {
-    console.error(error);
-  }
+
 }
 
 String.prototype.count = function(search) {
@@ -231,9 +235,6 @@ String.prototype.count = function(search) {
 }
 
 async function runCountTags(resultRange) {
-  try {
-
-
       const occurences = [];
       for(const text of textArray){
         const array = text.split(delimiter);
@@ -255,15 +256,10 @@ async function runCountTags(resultRange) {
         resultRange.values.push([occurence]);
       }
 
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 
 async function runCreateHistogram(resultRange) {
-  try {
-
       let maxTagCount=0;
       const tagCounts = {};
       for(const text of textArray){
@@ -292,14 +288,10 @@ async function runCreateHistogram(resultRange) {
         resultRange.values.push([i,tagCounts[i+""]==undefined?0:tagCounts[i+""]]);
       }
 
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 
 async function runCreateMatchHistogram(resultRange) {
-  try {
 
         const occurences = [];
         for(const text of textArray){
@@ -324,9 +316,7 @@ async function runCreateMatchHistogram(resultRange) {
           resultRange.values.push([occurence,occurences[occurence]]);
         }*/
 
-  } catch (error) {
-    console.error(error);
-  }
+
 }
 
 

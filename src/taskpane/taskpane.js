@@ -153,14 +153,19 @@ async function run() {
       const rootCell = getRange(context, resultAddress);
       let activeCell = rootCell;
 
+      document.getElementById("run-text").innerText="Futtatás... (1)";
       await runSingleCounter(activeCell);
       activeCell=rootCell.getOffsetRange(0,2);
+      document.getElementById("run-text").innerText="Futtatás... (2)";
       await runPairsCounter(activeCell);
       activeCell=rootCell.getOffsetRange(0,6);
+      document.getElementById("run-text").innerText="Futtatás... (3)";
       await runCountTags(activeCell);
       activeCell=rootCell.getOffsetRange(0,8);
+      document.getElementById("run-text").innerText="Futtatás... (4)";
       await runCreateHistogram(activeCell);
       activeCell=rootCell.getOffsetRange(0,11);
+      document.getElementById("run-text").innerText="Futtatás... (5)";
       await runCreateMatchHistogram(activeCell);
 
 

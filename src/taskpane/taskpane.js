@@ -148,34 +148,48 @@ async function processInputs(context){
 async function run() {
   try {
     await Excel.run(async (context) => {
-      document.getElementById("run-text").innerText="Futtatás...";
+      const runButton = document.getElementById("run-text");
+      runButton.innerText="Futtatás...";
       await processInputs(context);
       const rootCell = getRange(context, resultAddress);
       let activeCell = rootCell;
 
-      document.getElementById("run-text").innerText="Futtatás... (1)";
+      runButton.innerText="Futtatás... (1)";
+      await context.sync();
+      //refreshElement(runButton);
       await runSingleCounter(activeCell);
       activeCell=rootCell.getOffsetRange(0,2);
-      document.getElementById("run-text").innerText="Futtatás... (2)";
+      runButton.innerText="Futtatás... (2)";
+      await context.sync();
       await runPairsCounter(activeCell);
       activeCell=rootCell.getOffsetRange(0,6);
-      document.getElementById("run-text").innerText="Futtatás... (3)";
+      runButton.innerText="Futtatás... (3)";
+      await context.sync();
       await runCountTags(activeCell);
       activeCell=rootCell.getOffsetRange(0,8);
-      document.getElementById("run-text").innerText="Futtatás... (4)";
+      runButton.innerText="Futtatás... (4)";
+      await context.sync();
       await runCreateHistogram(activeCell);
       activeCell=rootCell.getOffsetRange(0,11);
-      document.getElementById("run-text").innerText="Futtatás... (5)";
+      runButton.innerText="Futtatás... (5)";
+      await context.sync();
       await runCreateMatchHistogram(activeCell);
 
 
       document.getElementById("run-text").innerText="Futtatás";
+      document.getElementById("error").innerText="";
     });
   } catch (error) {
     console.error(error);
-    document.getElementById("run-text").innerText="Futtatás\n(hiba:"+error+")";
+    document.getElementById("run-text").innerText="Futtatás";
+    document.getElementById("error").innerText="(Hiba: "+error+")";
 
   }
+}
+
+function refreshElement(element){
+  element.style.display="none";
+  element.style.display="block";
 }
 
 

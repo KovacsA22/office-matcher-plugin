@@ -11,6 +11,7 @@ Office.onReady((info) => {
     document.getElementById("app-body").style.display = "flex";
     document.getElementById("run").onclick = () => run();
     document.getElementById("fill").onclick = () => fillFromSelection();
+    document.getElementById("delete-output").onclick = () => deleteOutput();
     document.getElementById("select-words").onclick = () => load("words-start");
     document.getElementById("select-texts").onclick = () => load("texts-start");
     document.getElementById("select-results").onclick = () => load("results-start");
@@ -145,9 +146,22 @@ async function processInputs(context){
   }
 }
 
+async function deleteOutput() {
+  try {
+    await Excel.run(async (context) => {
+      const outputStart = getRangeById(context, "results-start");
+      const outputColumns = outputStart.getResizedRange(0,16).getEntireColumn();
+      outputColumns.clear("Contents");
+    });
+  } catch (error) {
+    console.error(error);
+    document.getElementById("error").innerText="(Hiba: "+error+")";
+  }
+}
 async function run() {
   try {
     await Excel.run(async (context) => {
+      document.getElementById("error").innerText="";
       const runButton = document.getElementById("run-text");
       runButton.innerText="Futtatás...";
       await processInputs(context);
@@ -156,33 +170,42 @@ async function run() {
 
       runButton.innerText="Futtatás... (1)";
       await context.sync();
-      //refreshElement(runButton);
-      await runSingleCounter(activeCell);
-      activeCell=rootCell.getOffsetRange(0,2);
+      await runSingleCounter(activeCell, false);
+      activeCell=rootCell.getOffsetRange(0,3);
+      await context.sync();
+
       runButton.innerText="Futtatás... (2)";
       await context.sync();
-      await runPairsCounter(activeCell);
+      await runSingleCounter(activeCell, true);
       activeCell=rootCell.getOffsetRange(0,6);
+      await context.sync();
+
       runButton.innerText="Futtatás... (3)";
+      await runPairsCounter(activeCell);
       await context.sync();
-      await runCountTags(activeCell);
-      activeCell=rootCell.getOffsetRange(0,8);
+      activeCell=rootCell.getOffsetRange(0,10);
       runButton.innerText="Futtatás... (4)";
+      
+      await runCountTags(activeCell);
       await context.sync();
-      await runCreateHistogram(activeCell);
-      activeCell=rootCell.getOffsetRange(0,11);
+      activeCell=rootCell.getOffsetRange(0,12);
       runButton.innerText="Futtatás... (5)";
+      
+      await runCreateHistogram(activeCell);
       await context.sync();
+      activeCell=rootCell.getOffsetRange(0,15);
+      runButton.innerText="Futtatás... (6)";
+      
       await runCreateMatchHistogram(activeCell);
+      await context.sync();
 
-
-      document.getElementById("run-text").innerText="Futtatás";
-      document.getElementById("error").innerText="";
     });
   } catch (error) {
     console.error(error);
-    document.getElementById("run-text").innerText="Futtatás";
     document.getElementById("error").innerText="(Hiba: "+error+")";
+
+  }finally{
+    document.getElementById("run-text").innerText="Futtatás";
 
   }
 }
@@ -193,8 +216,8 @@ function refreshElement(element){
 }
 
 
-async function runSingleCounter(resultRange) {
-      const occurences = [];
+async function runSingleCounter(resultRange, ordered) {
+      let occurences = new Map();
       for(const word of wordArray){
         let occurence = 0;
         for(const text of textArray){
@@ -204,16 +227,20 @@ async function runSingleCounter(resultRange) {
           occurence += text.includes(word);
           continue;
         }
-        occurences.push(occurence);
+        occurences.set(word,occurence);
       }
       console.log(occurences);
 
+      if(ordered){
+        occurences = new Map([...occurences.entries()].sort((a, b) => b[1] - a[1]));
+      }
+
       //let resultRange = context.workbook.worksheets.getActiveWorksheet().getRange(resultAddress);
-      resultRange=resultRange.getResizedRange(occurences.length-1,0);
+      resultRange=resultRange.getResizedRange(occurences.size-1,1);
       //resultRange.select();
       resultRange.values=[];
-      for(const occurence of occurences){
-        resultRange.values.push([occurence]);
+      for(const [word,count] of occurences){
+        resultRange.values.push([word,count]);
       }
       //await context.sync();
 

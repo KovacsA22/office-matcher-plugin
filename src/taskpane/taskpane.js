@@ -150,7 +150,7 @@ async function deleteOutput() {
   try {
     await Excel.run(async (context) => {
       const outputStart = getRangeById(context, "results-start");
-      const outputColumns = outputStart.getResizedRange(0,16).getEntireColumn();
+      const outputColumns = outputStart.getResizedRange(100000,16);
       outputColumns.clear("Contents");
     });
   } catch (error) {

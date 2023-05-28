@@ -218,6 +218,7 @@ function refreshElement(element){
 
 async function runSingleCounter(resultRange, ordered) {
       let occurences = new Map();
+      let total = 0;
       for(const word of wordArray){
         let occurence = 0;
         for(const text of textArray){
@@ -228,19 +229,40 @@ async function runSingleCounter(resultRange, ordered) {
           continue;
         }
         occurences.set(word,occurence);
+        if(word != "")
+          total +=occurence;
       }
       console.log(occurences);
+      console.log("Total:"+total);
+
+      if(ordered){
+        occurences = new Map([...occurences.entries()].sort((a, b) => b[1] - a[1]));
+        resultRange=resultRange.getResizedRange(occurences.size-1,2);
+      }else{
+        resultRange=resultRange.getResizedRange(occurences.size-1,1);
+      }
 
       if(ordered){
         occurences = new Map([...occurences.entries()].sort((a, b) => b[1] - a[1]));
       }
 
       //let resultRange = context.workbook.worksheets.getActiveWorksheet().getRange(resultAddress);
-      resultRange=resultRange.getResizedRange(occurences.size-1,1);
+      //resultRange=resultRange.getResizedRange(occurences.size-1,1);
       //resultRange.select();
       resultRange.values=[];
+      let sum=0;
       for(const [word,count] of occurences){
-        resultRange.values.push([word,count]);
+        if(ordered){
+          if(word == ""){
+            resultRange.values.push([word,count,""]);
+          }else{
+            sum += count;
+            let relativesum = sum/total;
+            resultRange.values.push([word,count,relativesum]);
+          }
+        }else{
+          resultRange.values.push([word,count]);
+        }
       }
       //await context.sync();
 
@@ -249,9 +271,9 @@ async function runSingleCounter(resultRange, ordered) {
 
 async function runPairsCounter(resultRange) {
       const occurences = {};
-        for(i=0;i<wordArray.length-1;i++){
-          for(j=i+1;j<wordArray.length;j++){
-            for(const text of textArray){
+      for(i=0;i<wordArray.length-1;i++){
+        for(j=i+1;j<wordArray.length;j++){
+          for(const text of textArray){
             if(text.includes(wordArray[i]) && text.includes(wordArray[j])){
               if(occurences[i+"x"+j]==undefined){
                 occurences[i+"x"+j]=0;

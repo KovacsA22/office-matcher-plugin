@@ -446,3 +446,37 @@ async function runCreateMatchHistogram(resultRange) {
 
 
 
+async function runCountTriplets(resultRange){
+  const resultMap = new Map();
+  for(let i=0;i<wordArray.length-2;i++){
+    for(let j=i+1;j<wordArray.length-1;j++){
+      for(let k=j+1;k<wordArray.length;k++){
+        let occurences=0;
+        for(const text of textArray){
+          occurences += (text.includes(wordArray[i]) && text.includes(wordArray[j]) && text.includes(wordArray[k]));
+          continue;
+        }
+        if(occurences > 0){
+          resultMap.set(i+"x"+j+"x"+k,occurences);
+        }
+      }
+    }
+  }
+  const ordered = new Map([...resultMap.entries()].sort((a, b) => b[1] - a[1]));
+
+  console.log(ordered);
+
+  resultRange=resultRange.getResizedRange(ordered.size-1,1);
+  resultRange.values=[];
+
+  for(const [triplet,count] of ordered){
+    const numbers = triplet.split("x");
+    const word1 = wordArray[numbers[0]];
+    const word2 = wordArray[numbers[1]];
+    const word3 = wordArray[numbers[2]];
+
+    resultRange.values.push([word1+"; "+word2+"; "+word3, count]);
+
+  }
+
+}

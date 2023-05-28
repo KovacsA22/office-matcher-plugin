@@ -166,37 +166,52 @@ async function run() {
       runButton.innerText="Futtatás...";
       await processInputs(context);
       const rootCell = getRange(context, resultAddress);
+
+
+      runButton.innerText="Futtatás... (1/8)";
       let activeCell = rootCell;
-
-      runButton.innerText="Futtatás... (1)";
-      await context.sync();
       await runSingleCounter(activeCell, false);
+      await context.sync();
+
+
+      runButton.innerText="Futtatás... (2/8)";
       activeCell=rootCell.getOffsetRange(0,3);
-      await context.sync();
-
-      runButton.innerText="Futtatás... (2)";
-      await context.sync();
       await runSingleCounter(activeCell, true);
-      activeCell=rootCell.getOffsetRange(0,6);
       await context.sync();
 
-      runButton.innerText="Futtatás... (3)";
+
+      runButton.innerText="Futtatás... (3/8)";
+      activeCell=rootCell.getOffsetRange(0,6);
       await runPairsCounter(activeCell);
       await context.sync();
-      activeCell=rootCell.getOffsetRange(0,10);
-      runButton.innerText="Futtatás... (4)";
+
+
       
+      runButton.innerText="Futtatás... (4/8)";
+      activeCell=rootCell.getOffsetRange(0,10);
       await runCountTags(activeCell);
       await context.sync();
+
+
+      runButton.innerText="Futtatás... (5/8)";
       activeCell=rootCell.getOffsetRange(0,12);
-      runButton.innerText="Futtatás... (5)";
-      
       await runCreateHistogram(activeCell);
       await context.sync();
+
+
+      runButton.innerText="Futtatás... (6/8)";
       activeCell=rootCell.getOffsetRange(0,15);
-      runButton.innerText="Futtatás... (6)";
-      
       await runCreateMatchHistogram(activeCell);
+      await context.sync();
+
+      runButton.innerText="Futtatás... (7/8)";
+      activeCell=rootCell.getOffsetRange(0,18);
+      await runPairsCounter2(activeCell);
+      await context.sync();
+
+      runButton.innerText="Futtatás... (8/8)";
+      activeCell=rootCell.getOffsetRange(0,23);
+      await runCountTriplets(activeCell);
       await context.sync();
 
     });

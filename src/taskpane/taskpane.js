@@ -297,6 +297,63 @@ async function runPairsCounter(resultRange) {
 
 }
 
+
+async function runPairsCounter2(resultRange) {
+
+  console.log("runPairsCounter2");
+  let occurenceMap = new Map();
+  for(const word of wordArray){
+    let occurence = 0;
+    for(const text of textArray){
+      occurence += text.includes(word);
+      continue;
+    }
+    occurenceMap.set(word,occurence);
+  }
+
+  occurenceMap = new Map([...occurenceMap.entries()].sort((a, b) => b[1] - a[1]));
+  const orderedWords = [...occurenceMap.keys()];
+
+  console.log(orderedWords);
+
+  const result={};
+  for(i=0;i<orderedWords.length;i++){
+    for(j=0;j<orderedWords.length;j++){
+      if(i==j){
+        continue;
+      }
+      for(const text of textArray){
+        if(text.includes(orderedWords[i]) && text.includes(orderedWords[j])){
+          if(result[orderedWords[i]] == undefined){
+            result[orderedWords[i]]={};
+          }
+          if(result[orderedWords[i]][orderedWords[j]]==undefined){
+            result[orderedWords[i]][orderedWords[j]]=0;
+          }
+          result[orderedWords[i]][orderedWords[j]]+=1;
+        }
+      }
+    }
+  }
+
+  console.log(result);
+
+  //let resultRange = context.workbook.worksheets.getActiveWorksheet().getRange(resultAddress);
+  resultRange=resultRange.getResizedRange(Object.keys(result).length-1,1);
+  //resultRange.select();
+  resultRange.values=[];
+  for(const key1 of Object.keys(result)){
+    let resultString = "";
+    console.log(key1, result[key1]);
+    for(const key2 of Object.keys(result[key1])){
+      resultString += key2+" ("+result[key1][key2]+"); ";
+    }
+    resultRange.values.push([key1, resultString]);
+
+  }
+
+}
+
 String.prototype.count = function(search) {
   var m = this.match(new RegExp(search.toString().replace(/(?=[.\\+*?[^\]$(){}\|])/g, "\\"), "gi"));
   return m ? m.length:0;
